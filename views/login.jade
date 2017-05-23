@@ -1,0 +1,36 @@
+doctype html
+html
+  head
+    title= title
+    link(rel='stylesheet', href='https://fonts.googleapis.com/css?family=Cormorant+Garamond')
+    link(rel='stylesheet', href='/stylesheets/login.css')
+  body
+    block content
+      nav.top
+        p.logo
+          a(href="/")
+            em Lumanote
+      //div.login
+      form.login(method="post" action="/logging-in")
+        div.container.subtitle Login
+        hr
+        if signupRedirect == "true"
+          div.center-text
+            div.signup-success Successfully created your account! Try logging in!
+          p
+        div.center-text
+          div
+            input(type="text" id="fieldEmail" name="username-email" placeholder="Username or Email")
+        p
+        div.center-text
+          div
+            input(type="text" id="fieldPass" name="pass" placeholder="Password")
+        p
+        div.center-text.button-padding
+          //a(href="#")
+          input.button.transition-6s(type="submit" value="Login")
+          //div.button.transition-6s Login
+        p
+        div.center-text.button-padding Don't have an account?
+          a(href="/signup")
+            div.transition-6s.switchform Signup

@@ -1,0 +1,313 @@
+/*
+  Passing serial data from Luminote app to Arduino, to control LED's
+
+ When new serial data arrives, this sketch checks first what that data is.
+    If the data is a note or a color, we read an integer.
+    If the data is an option, then we read it as a character
+
+ Created 3 December 2016
+ by Mateo Aviles
+
+ This example code does note work without the application Luminote.
+ This code and Luminote application code can be found at the url below.
+ https://github.com/tracyhammond/midi-composer
+
+ */
+
+#include <Adafruit_NeoPixel.h>
+
+#define PIN 6
+
+// Parameter 1 = number of pixels in strip
+// Parameter 2 = pin number (most are valid)
+// Parameter 3 = pixel type flags, add together as needed:
+//   NEO_KHZ800  800 KHz bitstream (most NeoPixel products w/WS2812 LEDs)
+//   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
+//   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
+//   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(144, PIN, NEO_GRB + NEO_KHZ800);
+
+int inputNote = 0;                // to keep track of note pressed
+int splitPoint = 0;               // to keep track of the split point
+boolean noteComplete = false;     // tells us when to expect a note
+boolean change_split = false;     // when the note pressed is used to change the split point
+boolean pulse = false;            // when to start pulsing the split point.
+int fadeRate = 0;                 // used to set the fade rate for the green color change in the split point
+int dimBright = 0;                // used to fade to no green to more green. 0=Dimmer 1=Brighter
+boolean release_note = false;
+
+boolean readColor = false;        // when to start reading integer bytes for color and not an inputNote
+int getThree = 1;
+int r;
+int g;
+int b;
+int color;
+boolean d = false;
+
+// Colors used all the time
+uint32_t off = strip.Color(0, 0, 0);
+uint32_t green_split = strip.Color(0, 195, 0);
+
+
+void clearLEDS(){
+  for (uint16_t i=0; i < strip.numPixels(); i++) {
+    if(i == 2*(splitPoint-9)-2 || i == 2*(splitPoint-9)-1){
+      //Serial.println(i, DEC);
+      if (splitPoint > 48){
+        strip.setPixelColor(2*(splitPoint-9)-2, green_split);
+        strip.setPixelColor(2*(splitPoint-9)-1, off);
+      }
+      else{
+        strip.setPixelColor(2*(splitPoint-9)-1, green_split);
+        strip.setPixelColor(2*(splitPoint-9)-2, off);
+      }
+    }
+    else{
+      strip.setPixelColor(i, off);
+    }
+  }
+  strip.show();
+}
+
+void changing_split_point(){
+  //turn all the leds off
+  //Serial.print("Blinking split point ");
+  //Serial.println(splitPoint, DEC);
+
+  //pulse the current split point note
+  pulse = true; //triggers function in loop
+  fadeRate = 195;
+  d = true;
+  //now just wait until they press note
+}
+
+void change_split_point_note(){
+  //Serial.print("Split point note ");
+  //Serial.println(inputNote, DEC);
+  //Serial.println(splitPoint, DEC);
+
+  // Invalid: Out of range
+  if(inputNote < 9 || inputNote > 81){}
+  else if(splitPoint == 0){
+    splitPoint = inputNote;
+    // split point is just being initialized
+    if (inputNote > 48){
+      strip.setPixelColor(2*(inputNote-9)-2, green_split);
+      strip.show();
+    }
+    else{
+      strip.setPixelColor(2*(inputNote-9)-1, green_split);
+      strip.show();
+    }
+  }
+  else{
+    pulse = false;
+    // First unhighlight old split point.
+    if (inputNote > 48){
+      strip.setPixelColor(2*(splitPoint-9)-2, off);
+      //strip.setPixelColor(inputNote, off);
+      strip.show();
+    }
+    else{
+      strip.setPixelColor(2*(splitPoint-9)-1, off);
+      //strip.setPixelColor(inputNote, off);
+      strip.show();
+    }
+
+    // Set new split point
+    splitPoint = inputNote;
+
+    //highlight the new split point
+    if (inputNote > 48){
+      strip.setPixelColor(2*(splitPoint-9)-2, green_split);
+      //strip.setPixelColor(inputNote, off);
+      strip.show();
+    }
+    else{
+      strip.setPixelColor(2*(splitPoint-9)-1, green_split);
+      //strip.setPixelColor(inputNote, off);
+      strip.show();
+    }
+    //then clear
+  }
+  d = false;
+}
+
+void unhighlightReleasedNote(){
+    //Serial.print("Turned off note ");
+    //Serial.println(inputNote, DEC);
+    if(inputNote < 9){}
+    else if (inputNote > 48){
+      strip.setPixelColor(2*(inputNote-9)-1, off);
+      //strip.setPixelColor(inputNote, off);
+      strip.show();
+    }
+    else{
+      strip.setPixelColor(2*(inputNote-9), off);
+      //strip.setPixelColor(inputNote, off);
+      strip.show();
+    }
+}
+
+void setup() {
+  // initialize serial
+  //Serial.begin(115200);
+  //Serial.begin(9600);
+  //Serial.begin(7200);
+  Serial.begin(4800);
+  // Start LED strip
+  strip.begin();
+  strip.setBrightness(16);
+  strip.show(); // Initialize all pixels to 'off'
+}
+
+void loop() {
+  // print the string when a newline arrives:
+//  if (noteComplete) {
+//    Serial.println(inputNote);
+//    // clear the string:
+//    inputNote= "";
+//    noteComplete = false;
+//  }
+   if(fadeRate == 0) dimBright = 1;
+   if(fadeRate == 195) dimBright = 0;
+   if(pulse == true) ledFadeToBeat();// Routine that fades color intensity to the beat
+   if(d == true)
+    delay(20);
+}
+
+void ledFadeToBeat() {
+  if(dimBright == 0) fadeRate -= 15;          // Set LED fade value
+  else fadeRate += 15;
+  fadeRate = constrain(fadeRate,0,255);   // Keep LED fade value from going into negative numbers
+  settingSplitPoint(fadeRate);                     // Write the value to the NeoPixels
+}
+
+void settingSplitPoint(int g) {     // Set the strip to one color intensity (green)
+   if (splitPoint > 48){
+      strip.setPixelColor(2*(splitPoint-9)-2, strip.Color(0, g, 0));
+      strip.show();
+   }
+   else{
+     strip.setPixelColor(2*(splitPoint-9)-1, strip.Color(0, g, 0));
+     strip.show();
+   }
+}
+
+/*
+  SerialEvent occurs whenever a new data comes in the
+ hardware serial RX.  This routine is run between each
+ time loop() runs, so using delay inside loop can delay
+ response.  Multiple bytes of data may be available.
+ */
+void serialEvent() {
+  // strip.setPixelColor(11, 255, 0, 255);
+  while (Serial.available()) {
+    // get the new byte
+    char inChar;
+
+    // If the next byte is a note or color read as (int) else read as (char)
+    if (noteComplete == true){
+      if (readColor == true){
+        color = (int)Serial.read();
+      }
+      else{
+        inputNote = (int)Serial.read();
+        inputNote = inputNote - 21;
+      }
+
+      // If the note should be used to change the split point
+      // Else it should be used to change the color of the LED's
+      if(change_split){
+        change_split_point_note();
+      }
+      else if(release_note){
+        unhighlightReleasedNote();
+      }
+      else{
+        if (readColor == false){
+          readColor = true;
+          continue;
+        }
+
+        if(getThree == 1){
+          r = color;
+          //Serial.println(r, DEC);
+          ++getThree;
+          continue;
+        }
+        else if (getThree == 2){
+          g = color;
+          //Serial.println(g, DEC);
+          ++getThree;
+          continue;
+        }
+        else{
+          b = color;
+          //Serial.println(b, DEC);
+          getThree = 1;
+
+          //Serial.print("Note to be highlighted: ");
+          //Serial.println(inputNote, DEC);
+          uint32_t new_color = strip.Color(r, g, b);
+          if(inputNote < 9){}
+          else if (inputNote > 48){
+            uint32_t old_color = strip.getPixelColor(2*(inputNote-9)-1);
+            if(new_color == old_color){
+              // Do nothing
+            }
+            else{
+              strip.setPixelColor(2*(inputNote-9)-1, new_color);
+              strip.show();
+            }
+          }
+          else{
+            uint32_t old_color = strip.getPixelColor(2*(inputNote-9));
+            if(new_color == old_color){
+              // Do nothing
+            }
+            else{
+              strip.setPixelColor(2*(inputNote-9), new_color);
+              strip.show();
+            }
+          }
+          readColor = false;
+        }
+      }
+      change_split = false;
+      release_note = false;
+      noteComplete = false;
+      continue;
+    }
+    else
+      inChar = (char)Serial.read();
+
+    // If clear all
+    if(inChar == 'D'){
+      clearLEDS();
+      continue;
+    }
+    // If highlighting note
+    if(inChar == 'H'){
+      noteComplete = true;
+      continue;
+    }
+    // If either chord or melody note is released unhighlight the LED
+    if(inChar == 'R'){
+      noteComplete = true;
+      release_note = true;
+      continue;
+    }
+    // If changing split point signal recieved then pulse the LED
+    if(inChar == '|'){
+      changing_split_point();
+      continue;
+    }
+    // If new split point note pressed change the LED
+    if(inChar == 'S'){
+      noteComplete = true;
+      change_split = true;
+      continue;
+    }
+  }
+}

@@ -1,0 +1,142 @@
+extends layout
+
+block content
+  div(pag=page)#main
+    div(style='display:'+dis+';')#welcome-splash.lm-loader
+      p.slogan(style='white-space:pre;') Welcome to Lumanote!
+      p.sub-slogan If it's your first time visiting, you should watch this video.
+      p.sub-slogan Otherwise hit space on your keyboard, or click the start button to begin.
+      div.video
+        <iframe id="ivideo" width="853" height="480" src="https://www.youtube.com/embed/aSBbf0DLbTg" frameborder="0" allowfullscreen></iframe>
+      div
+        div#start-button.button.transition-3s Continue
+    div(display=dis).midi-device-setup
+      p.slogan(style='white-space:pre;') MIDI Devices
+      p.sub-slogan Lumanote listens to all MIDI devices that are plugged in.
+      p.sub-slogan If you don't see your device below, make sure it's plugged in and hit the refresh button. 
+      div.form
+        div.select.transition-3s
+          //div#dev.dev-drop
+          ul.dd#devices-dropdown
+            //li None
+      div
+        div#midi-start-button.button.transition-3s Continue
+    div.qwerty-usage
+      p.slogan QWERTY Keyboard
+      p.sub-slogan You can use your qwerty keyboard anytime.
+      p.sub-slogan The image below shows you how.
+      div.sub-slogan.form
+        img(src="/images/AKM.jpg")
+      div
+        div#qwerty-button.button.transition-3s Start
+    nav#menu-top
+      a(href="/about").logo-home.transition-3s
+        div.back-logo
+          div.logo
+            p
+              em LL
+            //p
+              //em Lumanote
+      ul.menu-left
+        li#menuitem-mode.transition-3s
+          a#mode.menu-title Mode
+          a.menu-select
+          ul#scale-mode.dropdown
+            li Composition
+            li Chords
+            li Freestyle
+        li#menuitem-key.transition-3s
+          a#key.menu-title Key
+          a#selectedKey.menu-select
+          ul#keyDropdown.dropdown
+            - var Key = ["C (Am)", "Db (Bbm)", "D (Bm)", "Eb (Cm)", "E (C#m)", "F (Dm)", "F# (D#m)", "G (Em)", "Ab (Fm)", "A (F#m)", "Bb (Gm)", "B (G#m)"]
+            each key in Key
+              li= key
+        li#menuitem-sing.transition-3s
+          a#singNote.menu-title Sing
+          a#menu_sing.menu-select.menu-sing
+          ul#sing-list.dropdown
+            li(onclick="hideSing()") Off
+            li(onclick="displaySing()") On
+        li#menuitem-sounds.transition-3s
+          a#sounds.menu-title Sounds
+          a.menu-select
+          ul#window-contents-popular.dropdown
+            - var Instruments = ["Acoustic Grand Piano", "String Ensemble 1", "Choir Aahs", "Music Box", "Harpsichord", "Acoustic Guitar Nylon", "Synth Drum", "Cello", "Accordion", "Trumpet", "Tuba", "English Horn", "Tinkle Bell"]
+            each instrument in Instruments
+              li= instrument
+        li#menuitem-theme.transition-3s
+          a#colorScheme.menu-title Theme
+          a.menu-select
+          ul#level-list.dropdown
+            - var Theme = ["Beginner", "Advanced", "Expert", "Sunset", "Rain Forest", "Ocean"]
+            each theme in Theme
+              li= theme
+    div#main-contents
+      div(id='sing' style='display:none;')
+        div#detector.vague
+          div.pitch
+            span#pitch --
+              Hz
+          div.note
+            span#note --
+          canvas#output
+          div#detune
+            span#detune_amt --
+            span#flat cents &#9837;
+            span#sharp cents &#9839;
+      div#instructions
+      div#mychords
+        ul
+          - var CircleChordList = ["A", "B", "C", "D", "E", "F"]
+          each item, i in CircleChordList
+            li(id='chord_'+(i+1) class='circle chord_hov unselectable') item
+      ul#settings-buttons
+        li#zoomOut
+          ul.zero-margin-padding
+            li#zoomOutButton.circle.transition-3s.icon-zoomout
+              span.keyboard-shortcut.unselectable(style="margin: 25px 0 0 -15px") -
+        li#zoomIn
+          ul.zero-margin-padding
+            li#zoomInButton.circle.transition-3s.icon-zoomin
+              span.keyboard-shortcut.unselectable(style="margin: 25px 0 0 -15px") +
+        li#inKeyKeys
+          ul.zero-margin-padding
+            li#inKey.right-circle.in_key_keys.transition-3s.unselectable Keys
+              span.keyboard-shortcut.unselectable c
+        li#inMidiPanic
+          ul.zero-margin-padding
+            li#midipanic.right-circle.transition-3s.unselectable Panic
+              span.keyboard-shortcut.unselectable .
+        li#inSplitPoint
+          ul.zero-margin-padding
+            li#SplitPointButton.right-circle.transition-3s.unselectable Move SP
+              span.keyboard-shortcut.unselectable(style="margin: 30px 0 0 -45px;") /
+      div#my-piano.my_piano
+        div#visual-play
+          div(id="viz-note-base" class="viz-note" style="display: none")
+        div#piano-top.piano_top
+        ul
+    script(src="/js/Tone.js")
+    script(src="/js/oscillator.js")
+    script(src="/js/audiokeys.js")
+    script(src="/js/audio.js")
+    script(src="/js/highlight-chords.js")
+    script(src="/js/highlight-piano.js")
+    script(src="/js/highlight-themes.js")
+    script(src="/js/scroll-piano.js")
+    script(src="/js/highlight.js")
+    script(src="/js/chord.js")
+    script(src="/js/viz.js")
+    script(src="/js/menu.js")
+    script(src="/js/piano.js")
+    script(src="/js/midi.js")
+    // - script(src="/js/soundfont-player.js")
+    script(src="/js/soundfont-player.js")
+    script(src="/js/WebMIDIAPI.js")
+    script(src="/js/modes.js")
+    script(src="/js/controller.js")
+    script(src="/js/user-settings.js")
+    script(src="/js/time.js")
+    script(src="/js/pitchdetect.js")
+    script(src="/js/keyboard-presses.js")

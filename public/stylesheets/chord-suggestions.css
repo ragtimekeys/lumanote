@@ -1,0 +1,145 @@
+a[href], input[type='submit'], input[type='image'], label[for], select, button, .pointer {
+    cursor: pointer;
+}
+
+.circle {
+	width: 60px;
+	/*height: 60px;*/
+	padding-top: 15px;
+	padding-bottom: 15px;
+  	cursor: pointer;
+	border-radius: 50%;
+	margin: 5px;
+	background-color: hsl(0, 0%, 15%);
+	text-align: center;
+	vertical-align: middle;
+	font-size: 24px;
+	color:#ffffff;
+	font-weight: bold;
+	/*padding:30px;*/
+	/*opacity: 0.6;*/
+	/* width and height can be anything, as long as they're equal */
+}
+
+.right-circle {
+	width: 100px;
+	/*height: 60px;*/
+	padding-top: 6px;
+	padding-bottom: 20px;
+  	cursor: pointer;
+	border-radius: 7%;
+	margin: 5px;
+	background-color: hsl(0, 0%, 15%);
+	text-align: center;
+	vertical-align: middle;
+	font-size: 22px;
+	color:#ffffff;
+	font-weight: bold;
+	/*padding:30px;*/
+	/*opacity: 0.6;*/
+	/* width and height can be anything, as long as they're equal */
+}
+
+.keyboard-shortcut{
+  position: absolute;
+  font-size: 10px;
+  font-family: 'Lato';
+  text-transform: uppercase;
+  margin: 30px 0 0 -28px;
+  color: hsl(0, 0%, 40%);
+}
+.keyboard-shortcut-numbers{
+  position: absolute;
+  font-size: 10px;
+  font-family: 'Lato';
+  text-transform: uppercase;
+  margin: 27px 0 0 -3px;
+  color: hsl(0, 0%, 40%);
+}
+
+#zoomOut{
+  z-index: 30;
+}
+#zoomOut li{
+  list-style: none;
+}
+
+#zoomIn{
+  z-index: 30;
+}
+#zoomIn li{
+  list-style: none;
+}
+
+#inSplitPoint{
+  z-index: 30;
+}
+#inSplitPoint li{
+  list-style: none;
+}
+
+#inMidiPanic{
+  z-index: 30;
+}
+#inMidiPanic li{
+  list-style: none;
+}
+
+.zero-margin-padding{
+  margin: 0;
+  padding: 0;
+}
+
+#inKeyKeys{
+	z-index: 30;
+}
+#inKeyKeys li {
+	float:right;
+	list-style: none;
+}
+
+#mychords{
+	z-index: 30;
+	position: absolute;
+	bottom: 250px;
+}
+#mychords ul{
+	margin: 0;
+	padding: 0;
+}
+#mychords li {
+	float:left;
+	list-style: none;
+}
+
+#settings-buttons{
+  margin: 0;
+  padding: 0;
+  z-index: 30;
+  position: absolute;
+  bottom: 250px;
+  right: 0%;
+}
+#settings-buttons li{
+  float: right;
+  list-style: none;
+}
+.clear{
+	clear:both;
+}
+
+.greenPulse{
+  animation: gpulse 2s infinite;
+}
+
+@keyframes gpulse {
+  0% {
+    background-color: #262626;
+  }
+  50%{
+    background-color: #7BCC71;
+  }
+  100% {
+    background-color: #262626;
+  }
+}

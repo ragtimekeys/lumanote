@@ -1,0 +1,40 @@
+doctype html
+html
+  head
+    title= title
+    link(rel='stylesheet', href='https://fonts.googleapis.com/css?family=Cormorant+Garamond')
+    link(rel='stylesheet', href='/stylesheets/login.css')
+  body
+    block content
+      nav.top
+        p.logo
+          a(href="/")
+            em Lumanote
+      //div.login
+      form.login(method="POST" action="/signing-up")
+        div.container.subtitle Signup
+        hr
+        if error == "true"
+          div.center-text
+            div.signup-error Username already exists. Try a different username.
+          p
+        div.center-text
+          div
+            input(type="text" id="fieldUsername" name="username" placeholder="Username")
+        p
+        div.center-text
+          div
+            input(type="text" id="fieldEmail" name="email" placeholder="Email")
+        p
+        div.center-text
+          div
+            input(type="text" id="fieldPassword" name="password" placeholder="Password")
+        p
+        div.center-text.button-padding
+          //a(href="#")
+          input.button.transition-6s(type="submit" value="Signup")
+          //div.button.transition-6s Signup
+        p
+        div.center-text.button-padding Already have an account?
+          a(href="/login")
+            div.transition-6s.switchform Login

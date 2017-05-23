@@ -1,0 +1,27 @@
+{
+  "name": "luminote",
+  "version": "1.0.0",
+  "homepage": "https://github.com/luminote/luminote.github.io",
+  "authors": [
+    " "
+  ],
+  "description": "Luminote app",
+  "main": "app.js",
+  "keywords": [
+    "WebMIDIAPI",
+    "Piano",
+    "Composing"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "~3.3.1",
+    "angular": "~1.3.5"
+  }
+}

@@ -1,0 +1,93 @@
+doctype html
+html
+  head
+    title= title
+    link(rel='stylesheet', href='https://fonts.googleapis.com/css?family=Cormorant+Garamond')
+    link(rel='stylesheet', href='/stylesheets/index.css')
+    link(rel='stylesheet', href='https://fonts.googleapis.com/css?family=Lato')
+    link(href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet")
+    link(href="https://fonts.googleapis.com/css?family=Cantata+One" rel="stylesheet")
+    link(href="https://fonts.googleapis.com/css?family=Nixie+One" rel="stylesheet")
+    link(href="https://fonts.googleapis.com/css?family=Cinzel+Decorative" rel="stylesheet")
+    link(href="https://fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet")
+    link(href="https://fonts.googleapis.com/css?family=Roboto+Mono:100,300,400" rel="stylesheet")
+    link(href="https://fonts.googleapis.com/css?family=Rokkitt" rel="stylesheet")
+    link(href="https://fonts.googleapis.com/css?family=Source+Code+Pro:200,300,400" rel="stylesheet")
+    link(href="https://fonts.googleapis.com/css?family=Droid+Sans+Mono" rel="stylesheet")
+    script(src="/vendors/jquery.js")
+    script(src="/vendors/jquery-ui.min.js")
+    script(src="/js/home-menu.js")
+    script(src="/js/soundfont-player.js")
+  body
+    block content
+      nav.top
+        a(href="/app")
+          div.back-logo
+            div.logo
+              p.logo-l.transition-3s
+                em L
+              p.transition-3s
+                em Lumanote
+      //-
+        ul.right
+          li
+            a(href="/signup")
+              div.transition-3s signup
+          li
+            a(href="/login")
+              div.transition-3s login
+      div.intro
+        //-header.lumanote
+        //-  em Lumanote
+        //-div.description Lumanote aims to augment musicians' ability to compose and create melodies. Lumanote shows viable melody notes based on the key signature and mode provided. We hope that people will experiment and explore with different notes that would not be otherwise considered.
+        //-header.slogan Create melodies and chord progressions with Lumanote
+        header.slogan About
+        div.center-text.about-content
+          p Lumanote is a web application made for musicians who aren't familiar with creating music with a keyboard. It aims to help people play what they've already created in their minds, but can't recreate on the instrument itself.
+      //-
+        div.video
+          <iframe width="100%" height="100%" src="https://www.youtube.com/embed/fGp-yg-FHHY" style="display: block; margin: auto; flex: 1;" frameborder="0" allowfullscreen></iframe>
+    //-
+      div.features
+        div.container.subtitle Features
+        hr
+        div(style="padding: 20px;")
+          div.flex-container
+            div.center-text.item-padding-3
+              img(src="/images/chord.JPG")
+              div Chord suggestions help you discover basic chord progressions for a given key signature.
+            div.center-text.item-padding-3
+              img(src="/images/melody.JPG")
+              div Discover melody notes that go well with chords. Use our color coded notes to play jazzy notes or tension/release notes.
+            div.center-text.item-padding-3
+              img(src="/images/sing.JPG")
+              div Find out what note your singing with our pitch detector and discover what chord voicings you can use.
+          div.flex-container
+            div.center-text.item-padding-3
+              img(src="/images/color.JPG")
+              div Customize the color scheme of the note suggestions to what works best for you.
+            div.center-text.item-padding-3
+              div All midi keyboards are supported. Just plug it into a usb port.
+            div.center-text.item-padding-3
+              div Download Lumanote+LED to use on your own computer and to use with LEDs.
+      div.sign-up-download
+        div.container.subtitle Getting Started
+        hr
+        div.flex-container
+          div.center-text.item-padding-2
+            div Try it out!
+            a(href="/demo")
+              div.button.transition-6s Demo
+          div.center-text(style="width: 10%")
+            h3 OR
+          div.center-text.item-padding-2
+            div Download it from our github repo and run it on your machine
+            a(href="#")
+              div.button.transition-6s Download
+      div.contact
+        div.container.subtitle Contact
+        hr
+        div(style="padding: 20px;")
+          div.flex-container
+            div.center-text.item-padding-3
+              div some text
