@@ -1,6 +1,8 @@
 ## Lumanote
 
-Play it at https://lumanote.net
+Play it for free at https://lumanote.net!
+
+![Screenshot](ss.png)
 
 Lumanote is a real-time music composition aid. It provides melody and chord suggestions on what to play next through a prioritized key highlighting system. 
 
