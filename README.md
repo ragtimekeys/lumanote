@@ -1,6 +1,7 @@
 ## Lumanote
 
 Play it for free at https://lumanote.net!
+(Google Chrome only)
 
 ![Screenshot](ss.png)
 
