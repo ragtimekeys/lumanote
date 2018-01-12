@@ -1,0 +1,279 @@
+#!/usr/bin/env node
+
+/**
+ * Module dependencies.
+ */
+
+var fs = require('fs');
+
+var app = require('../app');
+var debug = require('debug')('nodejs-get-started:server');
+var https = require('https');
+var privateKey = fs.readFileSync("/etc/letsencrypt/keys/0001_key-certbot.pem");
+var certificate = fs.readFileSync("/etc/letsencrypt/live/lumanote.net/fullchain.pem");
+
+var options = {
+  key: fs.readFileSync("/etc/letsencrypt/keys/0001_key-certbot.pem"),
+  cert: fs.readFileSync("/etc/letsencrypt/live/lumanote.net/fullchain.pem")
+};
+
+var server = https.createServer({
+  key: privateKey,
+  cert: certificate
+}, app);
+
+// Redirect from http port 80 to https
+var http = require('http');
+http.createServer(function (req, res) {
+  res.writeHead(301, { "Location": "https://" + req.headers['host'] + req.url });
+  res.end();
+}).listen(80);
+
+server.on('error', onError);
+server.on('listening', onListening);
+server.listen(443);
+/**
+ * Normalize a port into a number, string, or false.
+ */
+
+function normalizePort(val) {
+  var port = parseInt(val, 10);
+
+  if (isNaN(port)) {
+    // named pipe
+    return val;
+  }
+
+  if (port >= 0) {
+    // port number
+    return port;
+  }
+
+  return false;
+}
+
+/**
+ * Event listener for HTTP server "error" event.
+ */
+
+function onError(error) {
+  if (error.syscall !== 'listen') {
+    throw error;
+  }
+
+  var bind = typeof port === 'string'
+    ? 'Pipe ' + port
+    : 'Port ' + port;
+
+  // handle specific listen errors with friendly messages
+  switch (error.code) {
+    case 'EACCES':
+      console.error(bind + ' requires elevated privileges');
+      process.exit(1);
+      break;
+    case 'EADDRINUSE':
+      console.error(bind + ' is already in use');
+      process.exit(1);
+      break;
+    default:
+      throw error;
+  }
+}
+
+/**
+ * Event listener for HTTP server "listening" event.
+ */
+
+function onListening() {
+  var addr = server.address();
+  var bind = typeof addr === 'string'
+    ? 'pipe ' + addr
+    : 'port ' + addr.port;
+  debug('Listening on ' + bind);
+}
+
+
+// now socket.io
+var io = require('socket.io').listen(server);
+var serialport = require('serialport');     //using serialport (for communication with arduino)
+var SerialPort = serialport;
+
+// Check OS and choose correct port the arduino is on
+// There should be at least one for the arduino. Mine is COM3.
+// /dev/ttyACM* -- Linux
+// COM* -- Windows
+// /dev/cu.usbmodemFA121-- Mac
+// var portName = process.argv[2];
+var isWin = process.platform;
+console.log(isWin);
+if (isWin == "win32"){
+  // portName = ports_list[0];
+  portName = "COM4";
+}
+else if (isWin == "darwin"){
+  // portName = ports_list[1];
+  portName = "/dev/cu.usbmodemFA121";
+}
+else if (isWin == "linux"){
+  // portName = ports_list[0];
+  portName = "/dev/ttyACM";
+}
+else if (isWin == "sunos"){
+  // portName = ports_list[0];
+}
+else if (isWin == "freebsd"){
+  // portName = ports_list[0];
+}
+else {
+  console.log("OS not found: No Port found");
+}
+
+// Try to make a connection with the arduino on port 'portName'
+var myPort = new SerialPort(portName, {
+  baudRate: 4800, //4800 7200 9600 115200
+  parser: serialport.parsers.readline("\n")
+});
+myPort.on('open', showPortOpen);
+myPort.on('data', sendSerialData);
+myPort.on('close', showPortClose);
+myPort.on('error', showError);
+
+function showPortOpen() {
+   console.log('port open. Data rate: ' + myPort.options.baudRate);
+}
+// It seems this call back function executes when the pasrer defined for the port
+// finds the specified character in the stream being read in and not being written out
+function sendSerialData(data) {
+  console.log('Arduino received and is sending back: ' + data);
+}
+function showPortClose() {
+   console.log('port closed.');
+}
+function showError(error) {
+   console.log('\nSerial port error: ' + error);
+}
+
+io.on('connection', function(socket){
+  console.log('\na user connected');
+
+  /* When the user closes the app window. */
+  socket.on('disconnect', function(){
+    console.log('user disconnected');
+  });
+
+  /* Just a simple test message*/
+  socket.on('testMessage', function(message){
+    console.log('Test message: ' + message);
+  });
+
+  /* Socket.IO message from the browser. data can be an array or string */
+  socket.on('serialArduinoStrings', function (data) {
+      // The message received as a String
+      console.log("Sending to arduino: " + data);
+      // Sending String character by character
+      for(var i=0; i<data.length; i++){
+          myPort.write(new Buffer(data[i], 'ascii'), function(err, results) {
+              // console.log('Error: ' + err);
+              // console.log('Results ' + results);
+          });
+      }
+      // Sending the terminate character
+      myPort.write(new Buffer('\n', 'ascii'), function(err, results) {
+          // console.log('err ' + err);
+          // console.log('results ' + results);
+      });
+  });
+
+  /* Socket.IO message from the browser to arduino */
+  /* In the process of changing the split point*/
+  socket.on('changeSplit', function(){
+    console.log("Changing split point");
+    myPort.write(new Buffer('|', 'ascii'), function(err, results) {});
+  });
+
+  socket.on('clearAllKeys', function(){
+    // console.log("clearing all keys");
+    myPort.write(new Buffer('D', 'ascii'), function(err,results){});
+  });
+
+  // socket.on('piano message', function(msg){
+  //   io.emit('piano message', msg);
+  // });
+
+  socket.on('serialHighlight', function (note_type, note) {
+
+    // Simple check for connection to the arduino
+    if(!myPort.isOpen()){
+      return;
+    }
+
+    // If the note is used as to specify the split point
+    // Sends message to change split point on actual midi keyboard
+    // Is suppose to change the LED light at which the split point is located.
+    if (note_type === "Split Point Note") {
+      myPort.write(new Buffer('S', 'ascii'), function(err, results) {
+          // console.log('err ' + err);
+          // console.log('results ' + results);
+      });
+      console.log("Sending split point note: " + String(note));
+      if(note < 16)
+        myPort.write(new Buffer( "0" + note.toString(16), 'hex'), function(err, results) {});
+      else{
+        myPort.write(new Buffer(note.toString(16), 'hex'), function(err, results) {
+            // console.log('err ' + err);
+            // console.log('results ' + results);
+        });
+      }
+    }
+
+    // If pressed note is released unhighlight that LED
+    if (note_type === "Released Note") {
+      myPort.write(new Buffer('R', 'ascii'), function(err, results) {
+          // console.log('err ' + err);
+          // console.log('results ' + results);
+      });
+      if(note < 16)
+        myPort.write(new Buffer( "0" + note.toString(16), 'hex'), function(err, results) {});
+      else{
+        myPort.write(new Buffer(note.toString(16), 'hex'), function(err, results) {
+            // console.log('err ' + err);
+            // console.log('results ' + results);
+        });
+      }
+    }
+
+  });
+
+  // Highlight the passed 'note' on the keyboard to the passed 'color'
+  // strip.setPixelColor(note, r, g, b); => strip.setPixelColor(11, 255, 0, 255);
+  // note: int
+  // color: array of three integers representing rgb
+  socket.on('Highlight', function (note, color) {
+
+    // Simple check on serial connection to the arduino
+    if(!myPort.isOpen()){
+      return;
+    }
+
+    // Sends message to Highlight the passed 'note'
+    myPort.write(new Buffer('H', 'ascii'), function(err, results) {});
+    console.log("Sending note " + String(note) + " to highlight it to color (" + color[0] + ", " + color[1] + ", " + color[2] + ")");
+
+    // Send note as hex byte
+    if(note < 16) myPort.write(new Buffer( "0" + note.toString(16), 'hex'));
+    else myPort.write(new Buffer(note.toString(16), 'hex'));
+
+    // Send the color for red
+    if(color[0] < 16) myPort.write(new Buffer( "0" + color[0].toString(16), 'hex'));
+    else myPort.write(new Buffer(color[0].toString(16), 'hex'));
+
+    // Send the color for green
+    if(color[1] < 16) myPort.write(new Buffer( "0" + color[1].toString(16), 'hex'));
+    else myPort.write(new Buffer(color[1].toString(16), 'hex'));
+
+    // Send the color for blue
+    if(color[2] < 16) myPort.write(new Buffer( "0" + color[2].toString(16), 'hex'));
+    else myPort.write(new Buffer(color[2].toString(16), 'hex'));
+  });
+
+});
