@@ -4,34 +4,31 @@
  * Module dependencies.
  */
 
-var fs = require('fs');
-
 var app = require('../app');
 var debug = require('debug')('nodejs-get-started:server');
-var https = require('https');
-var privateKey = fs.readFileSync("/etc/letsencrypt/keys/0002_key-certbot.pem");
-var certificate = fs.readFileSync("/etc/letsencrypt/live/lumanote.net/fullchain.pem");
-
-var options = {
-  key: fs.readFileSync("/etc/letsencrypt/keys/0002_key-certbot.pem"),
-  cert: fs.readFileSync("/etc/letsencrypt/live/lumanote.net/fullchain.pem")
-};
-
-var server = https.createServer({
-  key: privateKey,
-  cert: certificate
-}, app);
-
-// Redirect from http port 80 to https
 var http = require('http');
-http.createServer(function (req, res) {
-  res.writeHead(301, { "Location": "https://" + req.headers['host'] + req.url });
-  res.end();
-}).listen(80);
 
+/**
+ * Get port from environment and store in Express.
+ */
+
+var port = normalizePort(process.env.PORT || '3000');
+app.set('port', port);
+
+/**
+ * Create HTTP server.
+ */
+
+var server = http.createServer(app);
+
+/**
+ * Listen on provided port, on all network interfaces.
+ */
+
+server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
-server.listen(443);
+
 /**
  * Normalize a port into a number, string, or false.
  */
@@ -129,14 +126,6 @@ else {
 }
 
 // Try to make a connection with the arduino on port 'portName'
-var myPort = new SerialPort(portName, {
-  baudRate: 4800, //4800 7200 9600 115200
-  parser: serialport.parsers.readline("\n")
-});
-myPort.on('open', showPortOpen);
-myPort.on('data', sendSerialData);
-myPort.on('close', showPortClose);
-myPort.on('error', showError);
 
 function showPortOpen() {
    console.log('port open. Data rate: ' + myPort.options.baudRate);
